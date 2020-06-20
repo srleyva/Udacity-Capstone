@@ -5,6 +5,8 @@ add_definitions(-std=c++17)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
-project(HelloWorld)
+project(NetworkImpl)
 
-add_executable(HelloWorld src/main.cpp)
+add_executable(NetworkImpl src/main.cpp src/ip.cpp src/icmp.cpp)
+
+target_link_libraries(NetworkImpl /usr/local/lib/libviface.so)
