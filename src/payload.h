@@ -2,7 +2,7 @@
 #define PAYLOAD_H
 
 class PacketPayload {
-    virtual void handle() = 0;
+    void virtual Prepare() = 0;
 };
 
 #endif

@@ -44,8 +44,26 @@ public:
                 throw 6;
             }
     }
-    // TODO
-    void Handle() {}
+
+    ICMPPacket(ICMPType type, uint8_t code, std::vector<uint8_t> bytes) :
+        _type(type),
+        _code(code),
+        _checksum(ICMPPacket::GetChecksum(bytes)),
+        _bytes(bytes) {}
+    
+    ICMPPacket(ICMPPacket *request) {
+        switch (request->_type)
+        {
+        case ICMPType::EchoRequest:
+            this->_type = ICMPType::EchoRequest;
+            this->_code = 0;
+            break;
+        default:
+            break;
+        }
+
+        this->_bytes = request->_bytes;
+    }
 
 private:
     std::vector<uint8_t> _rawPayload;

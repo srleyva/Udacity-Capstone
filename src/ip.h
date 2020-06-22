@@ -9,8 +9,8 @@
 #include <sstream>
 #include <vector>
 
-#include "payload.h"
 #include "icmp.h"
+// #include "payload.h"
 
 class IPPacket {
 public:
@@ -39,7 +39,7 @@ public:
             switch (this->_proto)
             {
             case L4Proto::ICMP:
-                // this->_payload = new ICMPPacket();
+                // this->_payload = std::make_unique<ICMPPacket>(new ICMPPacket());
                 break;
             
             default:
@@ -47,16 +47,36 @@ public:
             }
         }
     
-    IPPacket(std::string srcAddr, uint16_t srcPort, std::string destAddr, uint16_t destPort, IpVersion ipVersion, L4Proto proto, std::vector<uint8_t> rawPayload) : 
+    IPPacket(std::string srcAddr, uint16_t srcPort, std::string destAddr, uint16_t destPort, IpVersion ipVersion, L4Proto proto) : 
         _version(ipVersion),
         _proto(proto),
         _srcAddress(srcAddr),
         _srcPort(srcPort),
         _destAddress(destAddr),
-        _destPort(destPort),
-        _rawPayload(rawPayload) {
+        _destPort(destPort) {
             // TODO: Construct RawBytes
         };
+
+    void Handle() {
+        // Construct reponse with L3 concerns
+        auto response = IPPacket(
+            this->_destAddress, 
+            this->_destPort, 
+            this->_srcAddress,
+            this->_srcPort,
+            this->_version,
+            this->_proto
+        );
+
+        switch (this->_proto)
+        {
+        case L4Proto::ICMP:
+            break;
+        
+        default:
+            break;
+        }
+    }
 
     friend std::ostream& operator<<(std::ostream &output, const IPPacket &packet) {
         output << "Src=" << packet._srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._srcPort;
@@ -71,6 +91,7 @@ public:
     uint16_t SrcPort() {return this->_srcPort; }
     std::string DestAddress() {return this->_destAddress; }
     uint16_t DestPort() {return this->_destPort; }
+    PacketPayload *Payload() { return this->_payload.get(); }
 private:
     std::vector<uint8_t> _rawPacket;
     IpVersion _version;
@@ -79,7 +100,7 @@ private:
     uint16_t _srcPort;
     std::string _destAddress;
     uint16_t _destPort;
-    PacketPayload *_payload;
+    std::unique_ptr<PacketPayload> _payload;
     std::vector<uint8_t> _rawPayload;
 
     IpVersion getVersion();

@@ -29,12 +29,8 @@ void NetworkInterface::Run() {
 
 bool NetworkInterface::handler(std::string const &name, uint id, std::vector<uint8_t> &packet) {
         IPPacket ipPacket(packet);
-        if (ipPacket.Version() == IPPacket::IpVersion::IPv4) {
-            if (ipPacket.Proto() == IPPacket::L4Proto::ICMP) {
-                std::cout << "Interface [" << name << "] ";
-                std::cout << "Packet [" << std::setfill('0') << std::setw(2) << ++_count << "]" ;
-                std::cout << " Type[IPV4] Protocol[ICMP]: " << ipPacket << std::endl;
-            }
-        }
+        std::cout << "Interface [" << name << "] ";
+        std::cout << "Packet [" << std::setfill('0') << std::setw(2) << ++_count << "]" ;
+        ipPacket.Handle();
         return true;
 }
