@@ -24,8 +24,20 @@ std::string IPPacket::IpAddrSrcFromPacket(std::vector<uint8_t> const &packet) {
     return ipaddr.str();
 }
 
+uint16_t IPPacket::PortFromPacket(std::vector<uint8_t> const &packet, IPPacket::PortType type) {
+    auto payload = IPPacket::PayloadFromPacket(packet);
+    auto byteIndex1 = (type == IPPacket::PortType::Src) ? 0 : 2;
+    auto byteIndex2 = (type == IPPacket::PortType::Dest) ? 1 : 3;
+    return (uint16_t(payload[byteIndex1]) << 8) | uint16_t(payload[byteIndex2]);
+}
+
 std::string IPPacket::IpAddrDestFromPacket(std::vector<uint8_t> const &packet) {
     std::stringstream ipaddr;
     ipaddr << (int)packet[16] << "." << (int)packet[17] << "." << (int)packet[18] << "." << (int)packet[19];
     return ipaddr.str();
+}
+
+std::vector<uint8_t> IPPacket::PayloadFromPacket(std::vector<uint8_t> const &packet) {
+    int ipHeaderLength = packet[0] & 0x0f;
+    return std::vector<uint8_t>(packet.begin() + (ipHeaderLength * 4), packet.end());
 }
