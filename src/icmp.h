@@ -53,10 +53,10 @@ public:
         return output.str();
     }
 
-    ICMPPacket(ICMPType type, uint8_t code, std::vector<uint8_t> bytes) :
+    ICMPPacket(ICMPType type, uint8_t code, uint16_t checksum, std::vector<uint8_t> bytes) :
         _type(type),
         _code(code),
-        _checksum(ICMPPacket::GetChecksum(bytes)),
+        _checksum(checksum),
         _bytes(bytes) {}
     
     std::unique_ptr<Payload> Handle() {
@@ -71,7 +71,7 @@ public:
         default:
             break;
         }
-        return std::make_unique<ICMPPacket>(responseType, responseCode, this->_bytes);;
+        return std::make_unique<ICMPPacket>(responseType, responseCode, this->_checksum, this->_bytes);
     }
 
 private:

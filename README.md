@@ -1,10 +1,6 @@
-# CPPND: Capstone Hello World Repo
+# CPPND: ICMP Implementation
 
-This is a starter repo for the Capstone project in the [Udacity C++ Nanodegree Program](https://www.udacity.com/course/c-plus-plus-nanodegree--nd213).
-
-The Capstone Project gives you a chance to integrate what you've learned throughout this program. This project will become an important part of your portfolio to share with current and future colleagues and employers.
-
-In this project, you can build your own C++ application starting with this repo, following the principles you have learned throughout this Nanodegree Program. This project will demonstrate that you can independently create applications using a wide range of C++ features.
+This is designed to implement the ICMP protocol (not in its entirety) in C++. This utilizes the tun/tap Linus drivers to create virtual interfaces on network (L3) layer. It parses raw network bytes into C++ structs. I left this open to implement the full ICMP, as well as TCP and UDP. I eventually plan to implement the full network stack jsut for fun.
 
 ## Dependencies for Running Locally
 * cmake >= 3.7
@@ -27,7 +23,17 @@ In this project, you can build your own C++ application starting with this repo,
 
 ## Basic Build Instructions
 
-1. Clone this repo.
+1. Clone and build the libviface repo.
+```
+git clone https://github.com/HPENetworking/libviface.git
+mkdir build & cd build
+make install
+```
+
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./HelloWorld`.
+4. Run it: `sudo ./NetworkImpl`. Needs sudo as it needs `cap_net_bind_service` to set up virtual interfaces.
+5. In a seperate terminal ping an address in the subnet `10.0.0.0/16`
+```
+ping 10.0.0.10
+```
