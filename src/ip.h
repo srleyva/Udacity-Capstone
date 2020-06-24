@@ -10,12 +10,11 @@
 #include <vector>
 
 #include "icmp.h"
-// #include "payload.h"
 
 class IPPacket {
 public:
     enum IpVersion {IPv4, IPv6, Unknown};
-    enum L4Proto {ICMP = 0x01, TCP = 0x06};
+    enum L4Proto {ICMP = 0x01, TCP = 0x06, SSCOPMCE = 0x80};
     enum PortType {Src, Dest};
 
     // Static Method for parsing raw bytes
@@ -39,14 +38,14 @@ public:
             switch (this->_proto)
             {
             case L4Proto::ICMP:
-                // this->_payload = std::make_unique<ICMPPacket>(new ICMPPacket());
+                this->_payload = std::make_unique<ICMPPacket>(this->_rawPayload);
                 break;
-            
             default:
+                this->_payload = std::make_unique<TODOPayload>(this->_proto);
                 break;
             }
         }
-    
+        
     IPPacket(std::string srcAddr, uint16_t srcPort, std::string destAddr, uint16_t destPort, IpVersion ipVersion, L4Proto proto) : 
         _version(ipVersion),
         _proto(proto),
@@ -57,9 +56,23 @@ public:
             // TODO: Construct RawBytes
         };
 
-    void Handle() {
-        // Construct reponse with L3 concerns
-        auto response = IPPacket(
+    std::string String() {
+        std::stringstream output;
+        output << "Src=" << this->_srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_srcPort;
+        output << "Dest=" << this->_destAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_destPort;
+        output << " Payload: " << this->_payload->String();
+        return output.str();
+    }
+
+    friend std::ostream& operator<<(std::ostream &output, const IPPacket &packet) {
+            output << "Src=" << packet._srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._srcPort;
+            output << "Dest=" << packet._destAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._destPort;
+            output << " Payload: " << packet._payload->String();
+            return output;
+    }
+
+    std::unique_ptr<IPPacket> Handle() {
+        auto response = std::make_unique<IPPacket>(
             this->_destAddress, 
             this->_destPort, 
             this->_srcAddress,
@@ -67,21 +80,8 @@ public:
             this->_version,
             this->_proto
         );
-
-        switch (this->_proto)
-        {
-        case L4Proto::ICMP:
-            break;
-        
-        default:
-            break;
-        }
-    }
-
-    friend std::ostream& operator<<(std::ostream &output, const IPPacket &packet) {
-        output << "Src=" << packet._srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._srcPort;
-        output << "Dest=" << packet._destAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._destPort;
-        return output;
+        response->_payload = std::move(this->_payload->Handle());
+        return response;
     }
 
     std::vector<uint8_t> Raw() {return this->_rawPacket; }
@@ -91,7 +91,7 @@ public:
     uint16_t SrcPort() {return this->_srcPort; }
     std::string DestAddress() {return this->_destAddress; }
     uint16_t DestPort() {return this->_destPort; }
-    PacketPayload *Payload() { return this->_payload.get(); }
+    Payload *PacketPayload() { return this->_payload.get(); }
 private:
     std::vector<uint8_t> _rawPacket;
     IpVersion _version;
@@ -100,7 +100,7 @@ private:
     uint16_t _srcPort;
     std::string _destAddress;
     uint16_t _destPort;
-    std::unique_ptr<PacketPayload> _payload;
+    std::unique_ptr<Payload> _payload;
     std::vector<uint8_t> _rawPayload;
 
     IpVersion getVersion();

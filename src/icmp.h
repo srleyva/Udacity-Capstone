@@ -3,7 +3,7 @@
 
 #include "payload.h"
 
-class ICMPPacket : public PacketPayload {
+class ICMPPacket : public Payload {
 public:
     // ICMP RFC: https://tools.ietf.org/html/rfc792
     enum ICMPType : uint8_t {
@@ -40,9 +40,17 @@ public:
         _checksum((uint16_t(rawPayload[2]) << 8) | uint16_t(rawPayload[3])),
         _bytes(rawPayload.begin() + 4, rawPayload.end()) {
             // Validate checksum
-            if (_checksum != ICMPPacket::GetChecksum(_rawPayload)) {
-                throw 6;
-            }
+            // if (_checksum != ICMPPacket::GetChecksum(_rawPayload)) {
+            //     std::cout << "Checksum mismatch" << this->_checksum << " " << ICMPPacket::GetChecksum(_rawPayload);
+            // }
+    }
+
+    std::string String() {
+        std::stringstream output;
+        output << "ICMP Type=" << this->_type;
+        output << " Code=" << (int)this->_code;
+        output << " Checksum=" << std::setfill(' ') << std::setw(6) << std::left << this->_checksum;
+        return output.str();
     }
 
     ICMPPacket(ICMPType type, uint8_t code, std::vector<uint8_t> bytes) :
@@ -51,18 +59,19 @@ public:
         _checksum(ICMPPacket::GetChecksum(bytes)),
         _bytes(bytes) {}
     
-    ICMPPacket(ICMPPacket *request) {
-        switch (request->_type)
+    std::unique_ptr<Payload> Handle() {
+        ICMPType responseType;
+        uint8_t responseCode;
+        switch (this->_type)
         {
         case ICMPType::EchoRequest:
-            this->_type = ICMPType::EchoRequest;
-            this->_code = 0;
+            responseType = ICMPType::EchoReply;
+            responseCode = 0;
             break;
         default:
             break;
         }
-
-        this->_bytes = request->_bytes;
+        return std::make_unique<ICMPPacket>(responseType, responseCode, this->_bytes);;
     }
 
 private:

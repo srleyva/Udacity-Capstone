@@ -1,9 +1,12 @@
 #ifndef NETWORKINTERFACE_H
 #define NETWORKINTERFACE_H
 
+#include <csignal>
 #include <iostream>
 #include <iomanip>
 #include <string>
+
+#include <unistd.h>
 
 #include <viface/viface.hpp>
 
@@ -17,9 +20,9 @@ private:
 
 public:
     NetworkInterface(std::string prefix, int numInterfaces);
+    ~NetworkInterface();
     void Run();
     bool handler(std::string const &name, uint id, std::vector<uint8_t> &packet);
        
 };
-
 #endif

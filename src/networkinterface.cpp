@@ -16,6 +16,20 @@ NetworkInterface::NetworkInterface(std::string prefix, int numInterfaces) {
     }
 }
 
+NetworkInterface::~NetworkInterface() {
+    for (auto interface: this->_virtualNics) {
+        delete interface;
+    }
+}
+
+bool NetworkInterface::handler(std::string const &name, uint id, std::vector<uint8_t> &packet) {
+        IPPacket ipPacket(packet);
+        std::cout << "Interface [" << name << "] " << "Packet [" << std::right << std::setfill('0') << std::setw(2) << ++_count << "]: " << ipPacket << std::endl;
+        std::unique_ptr<IPPacket> response = std::move(ipPacket.Handle());
+        std::cout << "Responding: " << response->String() << std::endl;
+        return true;
+}
+
 void NetworkInterface::Run() {
     viface::dispatcher_cb dispatchCallback = std::bind(
         &NetworkInterface::handler,
@@ -24,13 +38,6 @@ void NetworkInterface::Run() {
         std::placeholders::_2,
         std::placeholders::_3
     );
+    std::cout << "Starting Network Interface Controller" << std::endl;
     viface::dispatch(this->_virtualNics, dispatchCallback);
-}
-
-bool NetworkInterface::handler(std::string const &name, uint id, std::vector<uint8_t> &packet) {
-        IPPacket ipPacket(packet);
-        std::cout << "Interface [" << name << "] ";
-        std::cout << "Packet [" << std::setfill('0') << std::setw(2) << ++_count << "]" ;
-        ipPacket.Handle();
-        return true;
 }
