@@ -25,6 +25,9 @@ public:
     uint16_t static PortFromPacket(std::vector<uint8_t> const &packet, PortType);
     std::vector<uint8_t> static PayloadFromPacket(std::vector<uint8_t> const &packet);
 
+    // Static methods for constructing bytes
+    std::vector<uint8_t> static ConstructIPBytesFromString(std::string ipString);
+
     // Constructor
     IPPacket(std::vector<uint8_t> rawPacket) :
         _rawPacket(rawPacket),
@@ -46,23 +49,27 @@ public:
             }
         }
         
-    IPPacket(std::string srcAddr, uint16_t srcPort, std::string destAddr, uint16_t destPort, IpVersion ipVersion, L4Proto proto) : 
+    IPPacket(std::string srcAddr, uint16_t srcPort, std::string destAddr, uint16_t destPort, IpVersion ipVersion, L4Proto proto, std::vector<uint8_t> rawBytes) : 
         _version(ipVersion),
         _proto(proto),
         _srcAddress(srcAddr),
         _srcPort(srcPort),
         _destAddress(destAddr),
-        _destPort(destPort) {
-            // TODO: Construct RawBytes
+        _destPort(destPort),
+        _rawPacket(rawBytes) {
+            
+            std::vector<uint8_t> srcAddrBytes = IPPacket::ConstructIPBytesFromString(this->_srcAddress);
+            std::vector<uint8_t> destAddrBytes = IPPacket::ConstructIPBytesFromString(this->_destAddress);
+
+            int srcOffset = 12;
+            for (int i = 0; i < 4; i++) {
+                this->_rawPacket[i+srcOffset] = srcAddrBytes[i];
+                this->_rawPacket[i+4+srcOffset] = destAddrBytes[i];
+            }
+            this->_rawPacket.insert(this->_rawPacket.end(), this->_rawPayload.begin(), this->_rawPayload.end());
         };
 
-    std::string String() {
-        std::stringstream output;
-        output << "Src=" << this->_srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_srcPort;
-        output << "Dest=" << this->_destAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_destPort;
-        output << " Payload: " << this->_payload->String();
-        return output.str();
-    }
+    std::string String();
 
     friend std::ostream& operator<<(std::ostream &output, const IPPacket &packet) {
             output << "Src=" << packet._srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << packet._srcPort;
@@ -71,18 +78,7 @@ public:
             return output;
     }
 
-    std::unique_ptr<IPPacket> Handle() {
-        auto response = std::make_unique<IPPacket>(
-            this->_destAddress, 
-            this->_destPort, 
-            this->_srcAddress,
-            this->_srcPort,
-            this->_version,
-            this->_proto
-        );
-        response->_payload = std::move(this->_payload->Handle());
-        return response;
-    }
+    std::unique_ptr<IPPacket> Handle();
 
     std::vector<uint8_t> Raw() {return this->_rawPacket; }
     IpVersion Version() {return this->_version; }

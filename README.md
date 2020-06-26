@@ -2,6 +2,10 @@
 
 This is designed to implement the ICMP protocol (not in its entirety) in C++. This utilizes the tun/tap Linus drivers to create virtual interfaces on network (L3) layer. It parses raw network bytes into C++ structs. I left this open to implement the full ICMP, as well as TCP and UDP. I eventually plan to implement the full network stack jsut for fun.
 
+Requirements:
+
+* Respond to one ping from `ping` c util.
+
 ## Dependencies for Running Locally
 * cmake >= 3.7
   * All OSes: [click here for installation instructions](https://cmake.org/install/)
@@ -34,6 +38,7 @@ make install
 3. Compile: `cmake .. && make`
 4. Run it: `sudo ./NetworkImpl`. Needs sudo as it needs `cap_net_bind_service` to set up virtual interfaces.
 5. In a seperate terminal ping an address in the subnet `10.0.0.0/16`
+
 ```
-ping 10.0.0.10
+ping -c 1 10.0.0.10
 ```

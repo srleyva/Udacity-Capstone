@@ -41,3 +41,35 @@ std::vector<uint8_t> IPPacket::PayloadFromPacket(std::vector<uint8_t> const &pac
     int ipHeaderLength = packet[0] & 0x0f;
     return std::vector<uint8_t>(packet.begin() + (ipHeaderLength * 4), packet.end());
 }
+
+std::vector<uint8_t> IPPacket::ConstructIPBytesFromString(std::string ipString) {
+    std::vector<uint8_t> octetBytes;
+    std::stringstream ss(ipString);
+    std::string token;
+    while (std::getline(ss, token, '.')) {
+        octetBytes.push_back(std::stoi(token));
+    }
+    return octetBytes;
+}
+
+std::string IPPacket::String() {
+        std::stringstream output;
+        output << "Src=" << this->_srcAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_srcPort;
+        output << "Dest=" << this->_destAddress << ":" << std::left << std::setfill(' ') << std::setw(5) << this->_destPort;
+        output << " Payload: " << this->_payload->String();
+        return output.str();
+}
+
+std::unique_ptr<IPPacket> IPPacket::Handle() {
+    auto response = std::make_unique<IPPacket>(
+        this->_destAddress, 
+        this->_destPort, 
+        this->_srcAddress,
+        this->_srcPort,
+        this->_version,
+        this->_proto,
+        this->_rawPacket
+    );
+    response->_payload = std::move(this->_payload->Handle());
+    return response;
+}
