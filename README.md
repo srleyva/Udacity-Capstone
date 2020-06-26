@@ -4,7 +4,7 @@ This is designed to implement the ICMP protocol (not in its entirety) in C++. Th
 
 Requirements:
 
-* Respond to one ping from `ping` c util.
+* Respond to one ping from `ping` c util. 
 
 ## Dependencies for Running Locally
 * cmake >= 3.7
@@ -42,3 +42,11 @@ make install
 ```
 ping -c 1 10.0.0.10
 ```
+
+Rubric:
+- [x] - The project uses OOP techniques [ip struct](https://github.com/srleyva/Udacity-Capstone/blob/master/src/ip.h#L14), [ICMP struct](https://github.com/srleyva/Udacity-Capstone/blob/master/src/icmp.h#L6).
+- [x] - The project use smart pointers instead of raw pointers. [Nics owned by NetworkInterface](https://github.com/srleyva/Udacity-Capstone/blob/master/src/networkinterface.h#L23)
+
+- [x] - Class encapsulates behavior. [IP static methods for parsing IP header params](https://github.com/srleyva/Udacity-Capstone/blob/master/src/ip.h#L20)
+- [x] -  Class constructors utilize member initialization lists [IPPacket constructor](https://github.com/srleyva/Udacity-Capstone/blob/master/src/ip.h#L33)
+- [x] - The project uses move semantics to move data, instead of copying it, where possible. [ICMP payload is moved into IP packet](https://github.com/srleyva/Udacity-Capstone/blob/master/src/ip.cpp#L73)
